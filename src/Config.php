@@ -4,23 +4,29 @@ namespace GlpiPlugin\Mydevices;
 use CommonDBTM;
 
 /**
- * Plugin configuration wrapper
+ * Klasa Config
+ *
+ * Zarządza konfiguracją wtyczki MyDevices.
+ * Odpowiada za odczyt i zapis ustawień do tabeli glpi_plugin_mydevices_configs.
+ * Implementuje mechanizm domyślnych wartości, jeśli konfiguracja nie istnieje.
  */
 class Config extends CommonDBTM {
     protected $table = "glpi_plugin_mydevices_configs";
 
     /**
-     * Pobierz konfigurację
-     * @return array
+     * Pobiera konfigurację wtyczki.
+     *
+     * @return array Tablica z konfiguracją.
      */
     public static function getConfig(): array {
         $config = [];
         $c = new self();
-        // Zakładamy, że konfiguracja ma zawsze ID=1
+
+        // Konfiguracja jest przechowywana w jednym wierszu o ID=1
         if ($c->getFromDB(1)) {
             $config = $c->fields;
         } else {
-            // Domyślne wartości, jeśli brak wpisu w bazie
+            // Zwraca domyślne wartości, jeśli w bazie nie ma jeszcze konfiguracji
             $config = [
                 'id' => 1,
                 'inventory_enabled' => 1,
@@ -28,7 +34,7 @@ class Config extends CommonDBTM {
                 'inventory_notification_type' => 'email',
                 'inventory_email_recipients' => 'glpihelpdesk@uzp.gov.pl',
                 'inventory_email_template' => '',
-                'cache_enabled' => 0,
+                'cache_enabled' => 0, // Domyślnie wyłączony, aby uniknąć problemów z kompatybilnością
                 'cache_ttl' => 300,
                 'pdf_logo_path' => '/var/www/html/glpi/plugins/mydevices/logo/',
                 'pdf_header' => '',
@@ -40,9 +46,10 @@ class Config extends CommonDBTM {
     }
 
     /**
-     * Zapis konfiguracji
-     * @param array $data
-     * @return bool
+     * Zapisuje konfigurację wtyczki.
+     *
+     * @param array $data Dane do zapisu.
+     * @return bool Zwraca true, jeśli zapis się powiódł, w przeciwnym razie false.
      */
     public static function saveConfig(array $data): bool {
         $config_item = new self();
@@ -52,8 +59,10 @@ class Config extends CommonDBTM {
         $payload['id'] = 1;
 
         if ($found) {
+            // Aktualizuje istniejącą konfigurację
             return $config_item->update($payload);
         } else {
+            // Dodaje nową konfigurację, jeśli nie istnieje
             return $config_item->add($payload);
         }
     }

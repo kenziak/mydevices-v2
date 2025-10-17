@@ -7,16 +7,21 @@ use Plugin;
 use Ticket;
 
 /**
- * Klasa zarządzająca wpisami inwentaryzacji.
- * - createInventoryEntry() - tworzy wpis pending
- * - confirmPossessed() - potwierdzenie posiadania
- * - reportNotPossessed() - zgłoszenie braku, tworzy ticket
+ * Klasa Inventory
+ *
+ * Zarządza logiką inwentaryzacji, w tym tworzeniem wpisów,
+ * obsługą odpowiedzi użytkowników oraz integracją z systemem ticketów GLPI.
  */
 class Inventory {
     protected $table = 'glpi_plugin_mydevices_inventory';
 
     /**
-     * Tworzy wpis inwentaryzacyjny dla jednego urządzenia
+     * Tworzy nowy wpis inwentaryzacyjny dla danego urządzenia.
+     *
+     * @param int $userId ID użytkownika.
+     * @param string $itemtype Typ urządzenia.
+     * @param int $itemsId ID urządzenia.
+     * @return int ID nowo utworzonego wpisu.
      */
     public function createInventoryEntry(int $userId, string $itemtype, int $itemsId): int {
         global $DB;
@@ -33,7 +38,12 @@ class Inventory {
     }
 
     /**
-     * Użytkownik potwierdza posiadanie urządzenia
+     * Potwierdza posiadanie urządzenia przez użytkownika.
+     *
+     * @param int $entryId ID wpisu inwentaryzacyjnego.
+     * @param int $userId ID użytkownika.
+     * @param string|null $comment Opcjonalny komentarz.
+     * @return bool Zwraca true, jeśli operacja się powiodła.
      */
     public function confirmPossessed(int $entryId, int $userId, ?string $comment = null): bool {
         global $DB;
@@ -48,7 +58,12 @@ class Inventory {
     }
 
     /**
-     * Użytkownik zgłasza brak urządzenia => tworzymy ticket w GLPI
+     * Zgłasza brak urządzenia, tworzy ticket w GLPI i wysyła e-mail.
+     *
+     * @param int $entryId ID wpisu inwentaryzacyjnego.
+     * @param int $userId ID użytkownika.
+     * @param string|null $comment Opcjonalny komentarz.
+     * @return array|false Zwraca tablicę z ID ticketu lub false w przypadku błędu.
      */
     public function reportNotPossessed(int $entryId, int $userId, ?string $comment = null) {
         global $DB;
@@ -57,28 +72,28 @@ class Inventory {
             return false;
         }
 
-        // Utwórz ticket GLPI
+        // Utwórz ticket w GLPI
         $ticket = new \Ticket();
         $ticket->fields['name'] = 'Brak urządzenia zgłoszony przez użytkownika';
         $ticket->fields['content'] = "Użytkownik (ID: {$userId}) zgłosił brak urządzenia.\nTyp: {$row['itemtype']}\nItem ID: {$row['items_id']}\nKomentarz: " . ($comment ?? '');
         $ticket->fields['entities_id'] = Session::getLoginUserID() ? Plugin::getCurrentUserID() : 0;
-        $ticket->add();
+        $ticket_id = $ticket->add($ticket->fields);
 
-        // Aktualizacja wpisu inventory
+        // Zaktualizuj wpis w tabeli inwentaryzacyjnej
         $sql = "UPDATE `{$this->table}` SET user_response='not_possessed', confirmed_date=:confirmed_date, status='ticket_created', ticket_id=:ticket_id, comment=:comment WHERE id=:id";
         $stmt = $DB->prepare($sql);
         $stmt->bindValue(':confirmed_date', date('Y-m-d H:i:s'));
-        $stmt->bindValue(':ticket_id', $ticket->getID());
+        $stmt->bindValue(':ticket_id', $ticket_id);
         $stmt->bindValue(':comment', $comment);
         $stmt->bindValue(':id', $entryId);
         $stmt->execute();
 
-        // Wyślij emaily informacyjne (adresy z konfiguracji)
+        // Wyślij e-mail informacyjny do działu IT
         $cfg = Config::getConfig();
-        $toList = $cfg['inventory_email_recipients'] ?? 'gelphelpdesk@uzp.gov.pl';
-        $subject = 'MyDevices: Zgłoszenie braku urządzenia (ID: '.$ticket->getID().')';
-        $message = "Utworzono ticket ID: ".$ticket->getID()."\nUżytkownik ID: {$userId}\nTyp: {$row['itemtype']}\nItem ID: {$row['items_id']}\nKomentarz: ".($comment ?? '');
-        // Rozdzielanie adresów przecinkami lub średnikami
+        $toList = $cfg['inventory_email_recipients'] ?? 'glpihelpdesk@uzp.gov.pl';
+        $subject = 'MyDevices: Zgłoszenie braku urządzenia (Ticket ID: '.$ticket_id.')';
+        $message = "Utworzono ticket ID: ".$ticket_id."\nUżytkownik ID: {$userId}\nTyp: {$row['itemtype']}\nItem ID: {$row['items_id']}\nKomentarz: ".($comment ?? '');
+
         $tos = preg_split('/[;,]+/', $toList);
         foreach ($tos as $to) {
             $to = trim($to);
@@ -87,11 +102,14 @@ class Inventory {
             }
         }
 
-        return ['ticket_id' => $ticket->getID()];
+        return ['ticket_id' => $ticket_id];
     }
 
     /**
-     * Pobierz wpis po id
+     * Pobiera pojedynczy wpis inwentaryzacyjny.
+     *
+     * @param int $id ID wpisu.
+     * @return array|false Zwraca dane wpisu lub false, jeśli nie znaleziono.
      */
     public function getEntry(int $id) {
         global $DB;
@@ -103,7 +121,10 @@ class Inventory {
     }
 
     /**
-     * Pobierz wszystkie wpisy inwentaryzacyjne dla użytkownika
+     * Pobiera wszystkie wpisy inwentaryzacyjne dla danego użytkownika.
+     *
+     * @param int $userId ID użytkownika.
+     * @return array Tablica z wpisami inwentaryzacyjnymi.
      */
     public function getInventoryForUser(int $userId): array {
         global $DB;

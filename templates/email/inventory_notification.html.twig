@@ -1,10 +1,14 @@
+<!--
+  Szablon e-maila powiadomienia inwentaryzacyjnego.
+  Używa prostego HTML i CSS, aby zapewnić kompatybilność z klientami pocztowymi.
+  Zmienne takie jak {{ user_name }} są zastępowane dynamicznie przed wysłaniem.
+-->
 <!doctype html>
 <html lang="pl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    /* Prosty e-mailowy CSS - inline friendly */
     body { font-family: Arial, Helvetica, sans-serif; color: #333; margin:0; padding:20px; background:#f7f7f7; }
     .card { max-width:700px; margin:0 auto; background:#fff; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden; }
     .header { background:#0d6efd; color:#fff; padding:16px 20px; }

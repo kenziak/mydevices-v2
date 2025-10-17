@@ -1,5 +1,10 @@
 <?php
-// Ajax: obsługa odpowiedzi inwentaryzacyjnych (Posiadam / Nie posiadam)
+/**
+ * Endpoint AJAX do obsługi odpowiedzi inwentaryzacyjnych.
+ *
+ * Obsługuje akcje "possessed" (posiadam) i "not_possessed" (nie posiadam).
+ */
+
 include('../../../inc/includes.php');
 require_once __DIR__ . '/../src/Inventory.php';
 

@@ -1,11 +1,13 @@
 <?php
-$plurals = [
-    // 'String' => 'Plural form'
-];
-
-$dictionary = [
-    // Karta 'Moje urządzenia'
+/**
+ * Plik tłumaczeń dla wtyczki MyDevices.
+ *
+ * Zawiera wszystkie komunikaty w języku polskim,
+ * które są wykorzystywane w interfejsie użytkownika.
+ */
+$L = [
     'Moje urządzenia' => 'Moje urządzenia',
+    'Generuj protokół zdawczo-odbiorczy' => 'Generuj protokół zdawczo-odbiorczy',
     'Brak przypisanych urządzeń' => 'Brak przypisanych urządzeń',
     'Nazwa' => 'Nazwa',
     'Model' => 'Model',
@@ -14,44 +16,50 @@ $dictionary = [
     'Status' => 'Status',
     'Lokalizacja' => 'Lokalizacja',
     'Brak przypisanych elementów' => 'Brak przypisanych elementów',
-
-    // Filtry
-    'Szukaj' => 'Szukaj',
-    'Nazwa lub numer seryjny' => 'Nazwa lub numer seryjny',
-    'Typ urządzenia' => 'Typ urządzenia',
-    'Wszystkie typy' => 'Wszystkie typy',
-    'Wszystkie statusy' => 'Wszystkie statusy',
-
-    // Komunikaty
-    'Item updated successfully' => 'Element zaktualizowany pomyślnie',
-    'An error occurred while updating the asset.' => 'Wystąpił błąd podczas aktualizacji zasobu.',
-    'Invalid or missing parameters.' => 'Nieprawidłowe lub brakujące parametry.',
-    'Permission denied. You are not the owner of this asset or do not have sufficient rights.' => 'Odmowa dostępu. Nie jesteś właścicielem tego zasobu lub nie masz wystarczających uprawnień.',
-    'Invalid CSRF token' => 'Nieprawidłowy token CSRF',
-    'Method Not Allowed' => 'Metoda niedozwolona',
-    'Unsupported itemtype.' => 'Nieobsługiwany typ elementu.',
-
-    // Generator PDF
-    'Generuj protokół zdawczo-odbiorczy' => 'Generuj protokół zdawczo-odbiorczy',
-    'Protokół Zdawczo-Odbiorczy' => 'Protokół Zdawczo-Odbiorczy',
-    'Data wygenerowania' => 'Data wygenerowania',
-    'Pracownik' => 'Pracownik',
-    'Podpis Pracownika' => 'Podpis Pracownika',
-    'Podpis Pracownika IT' => 'Podpis Pracownika IT',
-    'Brak urządzeń do wyświetlenia.' => 'Brak urządzeń do wyświetlenia.',
-
-    // Uprawnienia
-    'Edycja własnych urządzeń (Lokalizacja i Status)' => 'Edycja własnych urządzeń (Lokalizacja i Status)',
-
-    // Typy urządzeń (dla spójności)
     'Komputer' => 'Komputer',
     'Monitor' => 'Monitor',
     'Peryferia' => 'Peryferia',
     'Telefon' => 'Telefon',
-    'SIM Card' => 'Karta SIM',
-];
-
-return [
-    'plurals' => $plurals,
-    'dictionary' => $dictionary,
+    'Karta SIM' => 'Karta SIM',
+    'Konfiguracja wtyczki Moje Urządzenia' => 'Konfiguracja wtyczki Moje Urządzenia',
+    'Ustawienia inwentaryzacji' => 'Ustawienia inwentaryzacji',
+    'Włącz system inwentaryzacji' => 'Włącz system inwentaryzacji',
+    'Częstotliwość kampanii (dni)' => 'Częstotliwość kampanii (dni)',
+    'Typ powiadomień' => 'Typ powiadomień',
+    'E-mail' => 'E-mail',
+    'Powiadomienie GLPI' => 'Powiadomienie GLPI',
+    'Oba' => 'Oba',
+    'Adresaci e-mail (IT)' => 'Adresaci e-mail (IT)',
+    'Ustawienia cache' => 'Ustawienia cache',
+    'Włącz cache' => 'Włącz cache',
+    'Czas życia cache (sekundy)' => 'Czas życia cache (sekundy)',
+    'Ustawienia PDF' => 'Ustawienia PDF',
+    'Ścieżka do logo' => 'Ścieżka do logo',
+    'Nagłówek PDF' => 'Nagłówek PDF',
+    'Stopka PDF' => 'Stopka PDF',
+    'Zapisz' => 'Zapisz',
+    'Zapisano pomyślnie' => 'Zapisano pomyślnie',
+    'Błąd podczas zapisu' => 'Błąd podczas zapisu',
+    'MyDevices - Panel Inwentaryzacji' => 'MyDevices - Panel Inwentaryzacji',
+    'Panel Inwentaryzacji - MyDevices' => 'Panel Inwentaryzacji - MyDevices',
+    'Utwórz i wyślij inwentaryzację teraz' => 'Utwórz i wyślij inwentaryzację teraz',
+    'Ostatnie kampanie' => 'Ostatnie kampanie',
+    'Id' => 'Id',
+    'Data utworzenia' => 'Data utworzenia',
+    'Rekordy' => 'Rekordy',
+    'Potwierdzone' => 'Potwierdzone',
+    'Tickety' => 'Tickety',
+    'Akcje' => 'Akcje',
+    'Pobierz CSV' => 'Pobierz CSV',
+    'Rekordy wymagające weryfikacji (escalated)' => 'Rekordy wymagające weryfikacji (escalated)',
+    'Możesz filtrować i pobrać raport lub przypisać zadanie dla technika.' => 'Możesz filtrować i pobrać raport lub przypisać zadanie dla technika.',
+    'Moje urządzenia - Inwentaryzacja' => 'Moje urządzenia - Inwentaryzacja',
+    'Wymagana inwentaryzacja' => 'Wymagana inwentaryzacja',
+    'Prosimy potwierdzić posiadanie urządzeń lub zgłosić brak.' => 'Prosimy potwierdzić posiadanie urządzeń lub zgłosić brak.',
+    'Urządzenie' => 'Urządzenie',
+    'Data powiadomienia' => 'Data powiadomienia',
+    'Twoja odpowiedź' => 'Twoja odpowiedź',
+    'Posiadam' => 'Posiadam',
+    'Nie posiadam' => 'Nie posiadam',
+    'Brak oczekujących potwierdzeń.' => 'Brak oczekujących potwierdzeń.',
 ];
