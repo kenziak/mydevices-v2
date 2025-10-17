@@ -1,5 +1,11 @@
 <?php
-// Widok: banner inwentaryzacyjny + lista oczekujących wpisów do akcji użytkownika
+/**
+ * Widok inwentaryzacji dla użytkownika.
+ *
+ * Wyświetla baner inwentaryzacyjny oraz listę urządzeń,
+ * które użytkownik musi potwierdzić lub zgłosić ich brak.
+ */
+
 include('../../../inc/includes.php');
 require_once __DIR__ . '/../src/Inventory.php';
 require_once __DIR__ . '/../inc/mydevices.class.php';
@@ -38,5 +44,5 @@ if (!empty($entries)) {
 }
 echo '</div>';
 
-echo "<script src='".Plugin::getWebDir('mydevices")."/js/mydevices.js'></script>";
+echo "<script src='".Plugin::getWebDir('mydevices')."/js/mydevices.js'></script>";
 Html::footer();

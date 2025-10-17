@@ -1,4 +1,10 @@
 <?php
+/**
+ * Endpoint AJAX do obsługi akcji administratora.
+ *
+ * Obsługuje akcje takie jak tworzenie kampanii czy eksportowanie raportów.
+ */
+
 include('../../../inc/includes.php');
 require_once __DIR__ . '/../src/ReportExporter.php';
 
@@ -20,8 +26,7 @@ if ($action === 'export_campaign' && isset($_GET['id'])) {
 }
 
 if ($action === 'create_campaign') {
-    // TODO: implementacja tworzenia kampanii i wysyłki initial maili
-    // Implementacja: InventoryNotification::createCampaignNow() lub Inventory::createCampaign()
+    // TODO: Zaimplementować logikę tworzenia kampanii
     header('Location: ' . Plugin::getWebDir('mydevices') . '/front/admin_dashboard.php');
     exit;
 }

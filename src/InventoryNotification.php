@@ -5,11 +5,19 @@ use DB;
 use Toolbox;
 
 /**
- * Cron task: plugin_mydevices_sendinventory
- * - Działa codziennie: sprawdza użytkowników i tworzy wpisy inwentaryzacyjne jeśli minęło >= inventory_frequency dni
+ * Klasa InventoryNotification
+ *
+ * Odpowiada za logikę zadań cyklicznych (cron).
+ * Zarządza tworzeniem kampanii inwentaryzacyjnych i wysyłaniem przypomnień.
  */
 class InventoryNotification {
 
+    /**
+     * Uruchamia zadanie cron.
+     *
+     * Sprawdza, czy dla danego użytkownika należy rozpocząć nową inwentaryzację,
+     * a następnie tworzy odpowiednie wpisy w bazie danych i wysyła powiadomienia.
+     */
     public static function runCron() {
         global $DB;
 
@@ -24,7 +32,7 @@ class InventoryNotification {
         foreach ($DB->query($sqlUsers)->fetchAll(\PDO::FETCH_ASSOC) as $u) {
             $userId = (int)$u['id'];
 
-            // Sprawdź kiedy była ostatnia potwierdzona inwentaryzacja (najpóźniejsze confirmed_date)
+            // Sprawdź, kiedy była ostatnia potwierdzona inwentaryzacja
             $sqlLast = "SELECT MAX(confirmed_date) AS last_conf FROM glpi_plugin_mydevices_inventory WHERE users_id = :uid";
             $stmt = $DB->prepare($sqlLast);
             $stmt->bindValue(':uid', $userId);
@@ -32,21 +40,21 @@ class InventoryNotification {
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
             $lastConf = $row['last_conf'] ?? null;
 
-            $need = false;
+            $needs_inventory = false;
             if (empty($lastConf)) {
-                $need = true;
+                $needs_inventory = true;
             } else {
-                $days = (time() - strtotime($lastConf)) / (60*60*24);
-                if ($days >= $freqDays) {
-                    $need = true;
+                $days_since_last = (time() - strtotime($lastConf)) / (60*60*24);
+                if ($days_since_last >= $freqDays) {
+                    $needs_inventory = true;
                 }
             }
 
-            if (!$need) {
+            if (!$needs_inventory) {
                 continue;
             }
 
-            // Pobierz urządzenia przypisane do użytkownika
+            // Pobierz wszystkie urządzenia przypisane do użytkownika
             $myDevices = new \MyDevices();
             $assets = $myDevices->getAllAssetsForUser($userId);
             if (empty($assets)) {
@@ -55,7 +63,7 @@ class InventoryNotification {
 
             $inventory = new Inventory();
             foreach ($assets as $asset) {
-                // Utwórz wpis pending (jeżeli nie istnieje już aktywny pending dla tego urządzenia)
+                // Sprawdź, czy nie ma już aktywnego wpisu "pending" dla tego urządzenia
                 $sqlCheck = "SELECT id FROM glpi_plugin_mydevices_inventory WHERE users_id=:uid AND itemtype=:it AND items_id=:iid AND status='pending'";
                 $stc = $DB->prepare($sqlCheck);
                 $stc->bindValue(':uid', $userId);
@@ -69,7 +77,7 @@ class InventoryNotification {
                 $inventory->createInventoryEntry($userId, $asset['itemtype'], (int)$asset['id']);
             }
 
-            // Wyślij email do użytkownika z linkiem do potwierdzenia (jeśli zdefiniowano)
+            // Wyślij e-mail do użytkownika z linkiem do potwierdzenia
             if (!empty($cfg['inventory_notification_type']) && in_array($cfg['inventory_notification_type'], ['email','both'])) {
                 $userObj = new \User();
                 $userObj->getFromDB($userId);

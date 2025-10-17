@@ -1,4 +1,11 @@
 <?php
+/**
+ * Panel administratora wtyczki MyDevices.
+ *
+ * Umożliwia tworzenie kampanii inwentaryzacyjnych, eksportowanie raportów
+ * oraz przeglądanie eskalacji.
+ */
+
 include('../../../inc/includes.php');
 Session::checkRight('config','w');
 
@@ -14,18 +21,19 @@ echo '<button class="btn btn-primary" type="submit">Utwórz i wyślij inwentaryz
 echo '</form>';
 echo '</div>';
 
-// Tutaj: lista kampanii (przykładowa tabela)
+// Tabela z ostatnimi kampaniami (na razie jako przykład)
 echo '<h4>Ostatnie kampanie</h4>';
 echo '<table class="table table-sm">';
 echo '<thead><tr><th>Id</th><th>Data utworzenia</th><th>Rekordy</th><th>Potwierdzone</th><th>Tickety</th><th>Akcje</th></tr></thead><tbody>';
 
-// TODO: wczytać rzeczywiste kampanie z DB
+// TODO: Wczytać rzeczywiste dane kampanii z bazy danych
 echo '<tr><td>1</td><td>2025-10-01</td><td>120</td><td>98</td><td>5</td><td><a class="btn btn-sm btn-outline-secondary" href="'.Plugin::getWebDir('mydevices').'/ajax/admin.actions.php?action=export_campaign&id=1">Pobierz CSV</a></td></tr>';
 
 echo '</tbody></table>';
 
 echo '<h4>Rekordy wymagające weryfikacji (escalated)</h4>';
 echo '<p>Możesz filtrować i pobrać raport lub przypisać zadanie dla technika.</p>';
+// TODO: Dodać dynamiczną tabelę z filtrowaniem i sortowaniem
 echo '<!-- tu dynamiczny grid z filtrem/sortowaniem -->';
 
 echo '</div>';

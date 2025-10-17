@@ -1,45 +1,41 @@
 <?php
-namespace GlpiPlugin\Mydevices;
+namespace GlpiPlugin\Mydevices\PDF;
 
-use Dompdf\Dompdf;
-use Dompdf\Options;
+use Mpdf\Mpdf;
 
 /**
- * Generowanie PDF z użyciem dompdf.
- * Klasa odpowiada za render HTML -> PDF, korzysta z szablonów w templates/pdf/
+ * Klasa MyDevicesPDF
+ *
+ * Odpowiada za generowanie protokołów w formacie PDF przy użyciu biblioteki mPDF.
+ * Na razie jest to tylko szkielet, który zostanie rozwinięty w przyszłości.
  */
 class MyDevicesPDF {
-    protected $templateDir;
-
-    public function __construct(string $templateDir = __DIR__ . '/../../templates/pdf') {
-        $this->templateDir = $templateDir;
-    }
 
     /**
-     * Generuje PDF z podanych danych i zwraca binarną treść PDF.
+     * Generuje protokół PDF.
      *
-     * @param string $templateFile Nazwa pliku szablonu (np. 'protocol.html.twig' lub plain html)
-     * @param array $params Dane do podstawienia w szablonie
-     * @return string PDF binary
+     * @param array $assets Tablica z danymi zasobów.
+     * @param array $user_data Tablica z danymi użytkownika.
      */
-    public function renderPdf(string $templateFile, array $params = []): string {
-        // Wczytaj szablon (proste zastępowanie zmiennych w formacie {{key}})
-        $tplPath = rtrim($this->templateDir, '/').'/'.$templateFile;
-        $html = file_get_contents($tplPath);
-        foreach ($params as $k => $v) {
-            $html = str_replace('{{'.$k.'}}', htmlspecialchars((string)$v), $html);
+    public function generateProtocol(array $assets, array $user_data) {
+        $mpdf = new Mpdf();
+        $mpdf->WriteHTML('<h1>Protokół zdawczo-odbiorczy</h1>');
+        $mpdf->WriteHTML('<p>Użytkownik: ' . $user_data['name'] . '</p>');
+
+        $html = '<table border="1" cellpadding="5" cellspacing="0" width="100%">';
+        $html .= '<thead><tr><th>Nazwa</th><th>Model</th><th>Serial</th></tr></thead>';
+        $html .= '<tbody>';
+        foreach ($assets as $asset) {
+            $html .= '<tr>';
+            $html .= '<td>' . htmlspecialchars($asset['name']) . '</td>';
+            $html .= '<td>' . htmlspecialchars($asset['model'] ?? '-') . '</td>';
+            $html .= '<td>' . htmlspecialchars($asset['serial'] ?? '-') . '</td>';
+            $html .= '</tr>';
         }
+        $html .= '</tbody></table>';
 
-        // Ustawienia dompdf z obsługą polskich znaków
-        $options = new Options();
-        $options->set('isHtml5ParserEnabled', true);
-        $options->set('isRemoteEnabled', true);
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-
-        return $dompdf->output();
+        $mpdf->WriteHTML($html);
+        $mpdf->Output('protocol.pdf', 'D');
+        exit;
     }
 }

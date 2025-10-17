@@ -1,9 +1,16 @@
 <?php
+/**
+ * Formularz konfiguracyjny wtyczki MyDevices.
+ *
+ * Umożliwia administratorom zarządzanie ustawieniami wtyczki,
+ * takimi jak inwentaryzacja, cache i generowanie PDF.
+ */
+
 include('../../../inc/includes.php');
 
 use GlpiPlugin\Mydevices\Config;
 
-// Sprawdź uprawnienia - tylko administratorzy mogą konfigurować
+// Sprawdzenie uprawnień
 Session::checkRight('config', UPDATE);
 
 $plugin_config = Config::getConfig();
@@ -11,13 +18,11 @@ Html::header(__('Konfiguracja wtyczki Moje Urządzenia', 'mydevices'));
 
 // Obsługa zapisu formularza
 if (isset($_POST['save'])) {
-    // Walidacja CSRF
     Session::checkCSRF('plugin_mydevices_config');
 
     $new_config = $_POST;
     unset($new_config['save'], $new_config['_glpi_csrf_token']);
 
-    // Konwersja checkboxów
     $new_config['inventory_enabled'] = isset($new_config['inventory_enabled']) ? 1 : 0;
     $new_config['cache_enabled'] = isset($new_config['cache_enabled']) ? 1 : 0;
 
@@ -31,43 +36,18 @@ if (isset($_POST['save'])) {
 ?>
 
 <style>
-.config-form-container {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-.form-section {
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #e0e0e0;
-}
-.form-section:last-child {
-    border-bottom: none;
-}
-.form-section h3 {
-    font-size: 1.2rem;
-    color: #333;
-    margin-bottom: 15px;
-    border-left: 3px solid #007bff;
-    padding-left: 10px;
-}
-.glpi_checkbox {
-    display: flex;
-    align-items: center;
-}
-.glpi_checkbox label {
-    margin-left: 8px;
-}
+.config-form-container { max-width: 900px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.form-section { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #e0e0e0; }
+.form-section:last-child { border-bottom: none; }
+.form-section h3 { font-size: 1.2rem; color: #333; margin-bottom: 15px; border-left: 3px solid #007bff; padding-left: 10px; }
+.glpi_checkbox { display: flex; align-items: center; }
+.glpi_checkbox label { margin-left: 8px; }
 </style>
 
 <div class="config-form-container">
     <form method="post" action="">
         <?php echo Html::getCsrfToken('plugin_mydevices_config'); ?>
 
-        <!-- Sekcja Inwentaryzacji -->
         <div class="form-section">
             <h3><?php echo __('Ustawienia inwentaryzacji'); ?></h3>
             <table class="tab_cadre_fix">
@@ -87,9 +67,9 @@ if (isset($_POST['save'])) {
                     <td><?php echo __('Typ powiadomień'); ?></td>
                     <td>
                         <select name="inventory_notification_type">
-                            <option value="email" <?php echo ($plugin_config['inventory_notification_type'] == 'email') ? 'selected' : ''; ?>><?php echo __('E-mail'); ?></option>
-                            <option value="glpi" <?php echo ($plugin_config['inventory_notification_type'] == 'glpi') ? 'selected' : ''; ?>><?php echo __('Powiadomienie GLPI'); ?></option>
-                            <option value="both" <?php echo ($plugin_config['inventory_notification_type'] == 'both') ? 'selected' : ''; ?>><?php echo __('Oba'); ?></option>
+                            <option value="email" <?php echo (($plugin_config['inventory_notification_type'] ?? 'email') == 'email') ? 'selected' : ''; ?>><?php echo __('E-mail'); ?></option>
+                            <option value="glpi" <?php echo (($plugin_config['inventory_notification_type'] ?? 'email') == 'glpi') ? 'selected' : ''; ?>><?php echo __('Powiadomienie GLPI'); ?></option>
+                            <option value="both" <?php echo (($plugin_config['inventory_notification_type'] ?? 'email') == 'both') ? 'selected' : ''; ?>><?php echo __('Oba'); ?></option>
                         </select>
                     </td>
                 </tr>
@@ -100,7 +80,6 @@ if (isset($_POST['save'])) {
             </table>
         </div>
 
-        <!-- Sekcja Cache -->
         <div class="form-section">
             <h3><?php echo __('Ustawienia cache'); ?></h3>
             <table class="tab_cadre_fix">
@@ -108,7 +87,7 @@ if (isset($_POST['save'])) {
                     <td><?php echo __('Włącz cache'); ?></td>
                     <td>
                         <div class="glpi_checkbox">
-                            <input type="checkbox" name="cache_enabled" <?php echo ($plugin_config['cache_enabled'] ?? 1) ? 'checked' : ''; ?>>
+                            <input type="checkbox" name="cache_enabled" <?php echo ($plugin_config['cache_enabled'] ?? 0) ? 'checked' : ''; ?>>
                         </div>
                     </td>
                 </tr>
@@ -119,7 +98,6 @@ if (isset($_POST['save'])) {
             </table>
         </div>
 
-        <!-- Sekcja PDF -->
         <div class="form-section">
             <h3><?php echo __('Ustawienia PDF'); ?></h3>
             <table class="tab_cadre_fix">

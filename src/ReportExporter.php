@@ -4,8 +4,10 @@ namespace GlpiPlugin\Mydevices;
 use DateTime;
 
 /**
- * ReportExporter - generuje pliki CSV z wynikami kampanii inwentaryzacyjnych
- * Pliki zapisywane są do: [plugin_dir]/exports/
+ * Klasa ReportExporter
+ *
+ * Odpowiada za generowanie raportów z kampanii inwentaryzacyjnych w formacie CSV.
+ * Zarządza również retencją plików, czyli automatycznym usuwaniem starszych eksportów.
  */
 class ReportExporter {
     protected $exportsDir;
@@ -19,8 +21,11 @@ class ReportExporter {
     }
 
     /**
-     * Generuje CSV dla danej kampanii (campaign_id opcjonalne) - dane to wynik z tabeli inventory
-     * zwraca ścieżkę do pliku.
+     * Generuje raport CSV dla danej kampanii inwentaryzacyjnej.
+     *
+     * @param int $campaignId ID kampanii. Jeśli 0, raport obejmuje ostatnie 30 dni.
+     * @return string Ścieżka do wygenerowanego pliku CSV.
+     * @throws \Exception Jeśli nie można otworzyć pliku do zapisu.
      */
     public function exportInventoryCampaign(int $campaignId = 0): string {
         global $DB;
@@ -31,13 +36,13 @@ class ReportExporter {
 
         $fh = fopen($path, 'w');
         if (!$fh) {
-            throw new \Exception("Unable to open file for writing: $path");
+            throw new \Exception("Nie można otworzyć pliku do zapisu: $path");
         }
 
         // Nagłówki CSV
         fputcsv($fh, ['inventory_id','campaign_id','users_id','user_email','itemtype','items_id','device_name','request_date','user_response','confirmed_date','status','ticket_id','reminder_count','last_sent_date','escalate_flag','comment']);
 
-        // Pobierz dane (dla uproszczenia - jeśli campaignId=0 pobieramy ostatnie 30 dni)
+        // Pobierz dane do raportu
         if ($campaignId) {
             $sql = "SELECT i.*, u.email AS user_email, '' AS device_name
                     FROM glpi_plugin_mydevices_inventory i
@@ -82,7 +87,10 @@ class ReportExporter {
     }
 
     /**
-     * Usuwa pliki eksportów starsze niż podana liczba dni (retencja)
+     * Usuwa stare pliki eksportów.
+     *
+     * @param int $days Liczba dni, po których pliki są uznawane za stare.
+     * @return int Liczba usuniętych plików.
      */
     public function cleanOldExports(int $days = 30): int {
         $removed = 0;
