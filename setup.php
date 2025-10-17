@@ -7,16 +7,13 @@
  * @license GPLv3
  */
 
-// Definicja wersji wtyczki
-define('PLUGIN_MYDEVICES_VERSION', '1.0.0');
-
 /**
  * Zwrócenie informacji o wersji wtyczki
  */
 function plugin_version_mydevices() {
     return [
         'name'         => 'My Devices',
-        'version'      => PLUGIN_MYDEVICES_VERSION,
+        'version'      => '2.0.0',
         'author'       => 'Łukasz Kurenda',
         'license'      => 'GPLv3',
         'homepage'     => '',
@@ -60,6 +57,9 @@ function plugin_init_mydevices() {
     if (Session::getLoginUserID()) {
         $PLUGIN_HOOKS['redefine_menus']['mydevices'] = 'plugin_mydevices_redefine_menus';
     }
+
+    // Dodaj stronę konfiguracyjną
+    $PLUGIN_HOOKS['config_page']['mydevices'] = 'front/config.form.php';
 }
 
 /**
