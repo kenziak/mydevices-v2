@@ -15,10 +15,15 @@ class MyDevices extends CommonGLPI {
       $uid = (int) Session::getLoginUserID();
       $all_assets = $this->getAllAssetsForUser($uid);
 
-      // Przycisk generowania PDF
-      $pdf_url = Plugin::getWebDir('mydevices') . '/front/generate_protocol.php';
+      // Przycisk generowania PDF - używamy formularza POST zamiast linku GET
       echo '<div style="margin-bottom: 1rem;">';
-      echo '<a href="' . Html::entities_deep($pdf_url) . '" target="_blank" class="btn btn-primary" style="background-color: #0d6efd; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 0.25rem; display: inline-block;"><i class="fas fa-file-pdf" style="margin-right: 0.5rem;"></i>' . __('Generuj protokół zdawczo-odbiorczy', 'mydevices') . '</a>';
+      echo '<form method="POST" action="' . Plugin::getWebDir('mydevices') . '/front/mydevices.php" style="display: inline;">';
+      echo '<input type="hidden" name="generate_protocol" value="1">';
+      echo '<input type="hidden" name="_glpi_csrf_token" value="' . Session::getNewCSRFToken('plugin_mydevices_protocol') . '">';
+      echo '<button type="submit" class="btn btn-primary" style="background-color: #0d6efd; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 0.25rem; display: inline-block; border: none; cursor: pointer;">';
+      echo '<i class="fas fa-file-pdf" style="margin-right: 0.5rem;"></i>' . __('Generuj protokół zdawczo-odbiorczy', 'mydevices');
+      echo '</button>';
+      echo '</form>';
       echo '</div>';
 
       if (empty($all_assets)) {
@@ -32,6 +37,79 @@ class MyDevices extends CommonGLPI {
       $this->renderToastContainer();
       $this->renderStyles();
       $this->renderScript();
+   }
+
+   public function generateProtocol() {
+      // Sprawdź uprawnienia
+      if (!Session::getLoginUserID()) {
+         return false;
+      }
+
+      $uid = (int) Session::getLoginUserID();
+      $all_assets = $this->getAllAssetsForUser($uid);
+
+      if (empty($all_assets)) {
+         Session::addMessageAfterRedirect(__('Brak urządzeń do wygenerowania protokołu', 'mydevices'), false, ERROR);
+         return false;
+      }
+
+      require_once(__DIR__ . '/../vendor/autoload.php');
+
+      $mpdf = new \Mpdf\Mpdf([
+         'mode' => 'utf-8',
+         'format' => 'A4',
+         'margin_left' => 15,
+         'margin_right' => 15,
+         'margin_top' => 20,
+         'margin_bottom' => 20,
+      ]);
+
+      // Pobierz dane użytkownika
+      $user = new User();
+      $user->getFromDB($uid);
+
+      $user_name = $user->fields['realname'] . ' ' . $user->fields['firstname'];
+      $date = date('Y-m-d H:i:s');
+
+      // Generuj HTML dla PDF
+      $html = '<h1 style="text-align: center;">Protokół zdawczo-odbiorczy</h1>';
+      $html .= '<p><strong>Użytkownik:</strong> ' . htmlspecialchars($user_name) . '</p>';
+      $html .= '<p><strong>Data:</strong> ' . htmlspecialchars($date) . '</p>';
+      $html .= '<hr>';
+
+      $html .= '<table border="1" cellpadding="5" cellspacing="0" width="100%">';
+      $html .= '<thead>';
+      $html .= '<tr style="background-color: #f0f0f0;">';
+      $html .= '<th>Nazwa</th>';
+      $html .= '<th>Model</th>';
+      $html .= '<th>Typ</th>';
+      $html .= '<th>Numer seryjny</th>';
+      $html .= '<th>Status</th>';
+      $html .= '<th>Lokalizacja</th>';
+      $html .= '</tr>';
+      $html .= '</thead>';
+      $html .= '<tbody>';
+
+      foreach ($all_assets as $asset) {
+         $html .= '<tr>';
+         $html .= '<td>' . htmlspecialchars($asset['name']) . '</td>';
+         $html .= '<td>' . htmlspecialchars($asset['model'] ?? '-') . '</td>';
+         $html .= '<td>' . htmlspecialchars($asset['type'] ?? '-') . '</td>';
+         $html .= '<td>' . htmlspecialchars($asset['serial'] ?? '-') . '</td>';
+         $html .= '<td>' . htmlspecialchars($asset['state_name'] ?? '-') . '</td>';
+         $html .= '<td>' . htmlspecialchars($asset['location_name'] ?? '-') . '</td>';
+         $html .= '</tr>';
+      }
+
+      $html .= '</tbody>';
+      $html .= '</table>';
+
+      $mpdf->WriteHTML($html);
+
+      $filename = 'protokol_' . $uid . '_' . date('Y-m-d_His') . '.pdf';
+      $mpdf->Output($filename, 'D'); // D = download
+
+      exit; // Ważne: zakończ skrypt po wysłaniu PDF
    }
 
    private function getAvailableStates(): array {
@@ -144,14 +222,14 @@ class MyDevices extends CommonGLPI {
             $is_owner = ($r['users_id'] ?? 0) == $uid;
             $can_edit = $is_admin || $is_owner;
 
-            $status_select = '<select class="editable-select" data-itemtype="'.Html::entities_deep($r['itemtype']).'" data-items_id="'.(int)$r['id'].'" data-field="states_id" '.(!$can_edit ? 'disabled' : '').'>';
+            $status_select = '<select class="editable-select" data-itemtype="'.Html::entities_deep($r['itemtype']).'" data-items-id="'.(int)$r['id'].'" data-field="states_id" '.(!$can_edit ? 'disabled' : '').'>';
             foreach ($states as $id => $name) {
                 $selected = ($id == $r['states_id']) ? ' selected' : '';
                 $status_select .= '<option value="'.(int)$id.'"'.$selected.'>'.Html::entities_deep($name).'</option>';
             }
             $status_select .= '</select>';
 
-            $location_select = '<select class="editable-select" data-itemtype="'.Html::entities_deep($r['itemtype']).'" data-items_id="'.(int)$r['id'].'" data-field="locations_id" '.(!$can_edit ? 'disabled' : '').'>';
+            $location_select = '<select class="editable-select" data-itemtype="'.Html::entities_deep($r['itemtype']).'" data-items-id="'.(int)$r['id'].'" data-field="locations_id" '.(!$can_edit ? 'disabled' : '').'>';
             foreach ($locations as $id => $name) {
                 $selected = ($id == $r['locations_id']) ? ' selected' : '';
                 $location_select .= '<option value="'.(int)$id.'"'.$selected.'>'.Html::entities_deep($name).'</option>';
@@ -393,14 +471,14 @@ class MyDevices extends CommonGLPI {
             table.addEventListener('change', function(e) {
                 if (e.target && e.target.classList.contains('editable-select')) {
                     const select = e.target;
-                    const {itemtype, items_id, field} = select.dataset;
+                    const {itemtype, itemsId, field} = select.dataset;
                     const value = select.value;
                     
                     console.log('🔔 Select changed');
                     console.log('Dataset:', select.dataset);
                     console.log('Value:', value);
                     
-                    if (!itemtype || !items_id || !field) {
+                    if (!itemtype || !itemsId || !field) {
                         console.error('❌ Missing data attributes!');
                         showToast('Błąd: Brak wymaganych atrybutów', true);
                         return;
@@ -409,7 +487,7 @@ class MyDevices extends CommonGLPI {
                     // Dodaj do kolejki
                     updateQueue.push({
                         itemtype, 
-                        items_id,
+                        items_id: itemsId,
                         field, 
                         value,
                         selectElement: select
