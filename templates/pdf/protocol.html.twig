@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    /* Prosty styl - zachowaj layout w razie potrzeby dopasować po porównaniu z main */
+    body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
+    header { text-align: center; margin-bottom: 10px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border:1px solid #000; padding:5px; }
+    .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="{{logo_path}}" alt="logo" style="max-height:60px;"><br>
+    <h2>Protokół wydania / potwierdzenie posiadania urządzeń</h2>
+  </header>
+
+  <section>
+    <p>Użytkownik: {{user_name}} (ID: {{user_id}})</p>
+    <p>Data: {{date}}</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Nazwa</th>
+          <th>Model</th>
+          <th>Serial</th>
+          <th>Typ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{items_rows}}
+      </tbody>
+    </table>
+  </section>
+
+  <div class="footer">
+    {{pdf_footer}}
+  </div>
+</body>
+</html>

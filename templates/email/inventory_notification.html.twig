@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    /* Prosty e-mailowy CSS - inline friendly */
+    body { font-family: Arial, Helvetica, sans-serif; color: #333; margin:0; padding:20px; background:#f7f7f7; }
+    .card { max-width:700px; margin:0 auto; background:#fff; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden; }
+    .header { background:#0d6efd; color:#fff; padding:16px 20px; }
+    .header h1 { margin:0; font-size:18px; font-weight:600; }
+    .body { padding:18px 20px; font-size:14px; line-height:1.4; color:#222; }
+    .devices { width:100%; border-collapse:collapse; margin-top:12px; }
+    .devices th { text-align:left; padding:8px; background:#f1f5f9; border-bottom:1px solid #e6eef8; font-weight:600; }
+    .devices td { padding:8px; border-bottom:1px solid #eee; font-size:13px; }
+    .actions { text-align:center; margin-top:18px; }
+    .btn { display:inline-block; padding:10px 16px; border-radius:4px; color:#fff; text-decoration:none; font-weight:600; margin:0 6px; }
+    .btn-confirm { background:#28a745; }
+    .btn-deny { background:#dc3545; }
+    .note { font-size:12px; color:#6b7280; margin-top:12px; }
+    .footer { padding:12px 20px; font-size:12px; color:#6b7280; border-top:1px solid #f0f0f0; }
+    @media(max-width:480px){ .header h1{font-size:16px;} .btn{display:block; margin:8px auto;} }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>[UWAGA] Wymagana weryfikacja urządzeń przypisanych do Twojego konta</h1>
+    </div>
+    <div class="body">
+      <p>Cześć {{ user_name }},</p>
+      <p>Prosimy o potwierdzenie stanu urządzeń przypisanych do Twojego konta. Poniżej znajduje się lista urządzeń widocznych w systemie:</p>
+
+      <table class="devices" role="presentation">
+        <thead>
+          <tr>
+            <th>Nazwa</th><th>Model</th><th>Serial</th><th>Lokalizacja</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ devices_table|raw }}
+        </tbody>
+      </table>
+
+      <div class="actions">
+        <a class="btn btn-confirm" href="{{ confirm_url }}" target="_blank">Posiadam</a>
+        <a class="btn btn-deny" href="{{ deny_url }}" target="_blank">Nie posiadam</a>
+      </div>
+
+      <p class="note">
+        Jeśli nie posiadasz urządzenia, kliknij "Nie posiadam" i podaj krótki komentarz. W razie potrzeby dział IT skontaktuje się z Tobą.
+      </p>
+
+      <p class="note">
+        Przypomnienia będą wysłane po 5 i 7 dniach. Jeśli nie odpowiesz po tych przypomnieniach, sprawa zostanie przekazana do działu IT do ręcznej weryfikacji.
+      </p>
+
+      <p class="note">
+        Kontakt do IT: <strong>{{ helpdesk_email }}</strong>
+      </p>
+    </div>
+
+    <div class="footer">
+      <div>Protokół inwentaryzacji: {{ campaign_name }} • Data: {{ campaign_date }}</div>
+      <div>Wygenerowano automatycznie przez system • GLPI</div>
+    </div>
+  </div>
+</body>
+</html>
