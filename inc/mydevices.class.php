@@ -144,14 +144,14 @@ class MyDevices extends CommonGLPI {
             $is_owner = ($r['users_id'] ?? 0) == $uid;
             $can_edit = $is_admin || $is_owner;
 
-            $status_select = '<select class="editable-select" data-itemtype="'.Html::entities_deep($r['itemtype']).'" data-items-id="'.(int)$r['id'].'" data-field="states_id" '.(!$can_edit ? 'disabled' : '').'>';
+            $status_select = '<select class="editable-select" data-itemtype="'.Html::entities_deep($r['itemtype']).'" data-items_id="'.(int)$r['id'].'" data-field="states_id" '.(!$can_edit ? 'disabled' : '').'>';
             foreach ($states as $id => $name) {
                 $selected = ($id == $r['states_id']) ? ' selected' : '';
                 $status_select .= '<option value="'.(int)$id.'"'.$selected.'>'.Html::entities_deep($name).'</option>';
             }
             $status_select .= '</select>';
 
-            $location_select = '<select class="editable-select" data-itemtype="'.Html::entities_deep($r['itemtype']).'" data-items-id="'.(int)$r['id'].'" data-field="locations_id" '.(!$can_edit ? 'disabled' : '').'>';
+            $location_select = '<select class="editable-select" data-itemtype="'.Html::entities_deep($r['itemtype']).'" data-items_id="'.(int)$r['id'].'" data-field="locations_id" '.(!$can_edit ? 'disabled' : '').'>';
             foreach ($locations as $id => $name) {
                 $selected = ($id == $r['locations_id']) ? ' selected' : '';
                 $location_select .= '<option value="'.(int)$id.'"'.$selected.'>'.Html::entities_deep($name).'</option>';
@@ -393,14 +393,14 @@ class MyDevices extends CommonGLPI {
             table.addEventListener('change', function(e) {
                 if (e.target && e.target.classList.contains('editable-select')) {
                     const select = e.target;
-                    const {itemtype, itemsId, field} = select.dataset;
+                    const {itemtype, items_id, field} = select.dataset;
                     const value = select.value;
                     
                     console.log('🔔 Select changed');
                     console.log('Dataset:', select.dataset);
                     console.log('Value:', value);
                     
-                    if (!itemtype || !itemsId || !field) {
+                    if (!itemtype || !items_id || !field) {
                         console.error('❌ Missing data attributes!');
                         showToast('Błąd: Brak wymaganych atrybutów', true);
                         return;
@@ -409,7 +409,7 @@ class MyDevices extends CommonGLPI {
                     // Dodaj do kolejki
                     updateQueue.push({
                         itemtype, 
-                        items_id: itemsId, 
+                        items_id,
                         field, 
                         value,
                         selectElement: select

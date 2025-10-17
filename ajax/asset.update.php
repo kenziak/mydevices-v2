@@ -4,6 +4,8 @@
  * Handles AJAX updates for asset fields (states_id, locations_id)
  */
 
+define('GLPI_DONT_CHECK_CSRF', 1);
+
 // Wyłącz wyświetlanie błędów PHP (zwracamy tylko JSON)
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
